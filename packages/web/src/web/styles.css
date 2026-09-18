@@ -1,0 +1,263 @@
+@import "tailwindcss";
+
+@theme {
+  --color-fb-black: #000000;
+  --color-fb-ink: #07070a;
+  --color-fb-white: #ffffff;
+  --color-fb-ash: #8a8a8f;
+  --color-fb-dim: #3a3a40;
+  --color-fb-burn: #ff5a17;
+  --color-fb-ember: #ffa02b;
+  --color-fb-flare: #ffe08a;
+  --color-fb-nft: #4de2ff;
+  --color-fb-play: #b98cff;
+  --color-fb-live: #38ff7a;
+
+  --font-pixel: "Press Start 2P", "Courier New", monospace;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+}
+
+:root {
+  color-scheme: dark;
+  background: #000;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: #000;
+}
+
+body {
+  margin: 0;
+  color: var(--color-fb-white);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: none;
+  text-rendering: geometricPrecision;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-fb-burn);
+  color: #000;
+}
+
+/* scrollbars, arcade style */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: #000;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-fb-dim);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fb-burn);
+}
+
+@utility pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+/* CRT overlay */
+.crt-lines {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.055) 0px,
+    rgba(255, 255, 255, 0.055) 1px,
+    rgba(0, 0, 0, 0) 1px,
+    rgba(0, 0, 0, 0) 3px
+  );
+  mix-blend-mode: screen;
+  animation: crt-flicker 7s steps(24) infinite;
+}
+
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+.crt-sweep {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 160px;
+  z-index: 58;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 90, 23, 0) 0%,
+    rgba(255, 90, 23, 0.05) 50%,
+    rgba(255, 90, 23, 0) 100%
+  );
+  animation: crt-sweep 9s linear infinite;
+}
+
+@keyframes crt-flicker {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  48% {
+    opacity: 0.7;
+  }
+  52% {
+    opacity: 1;
+  }
+}
+
+@keyframes crt-sweep {
+  0% {
+    transform: translateY(-200px);
+  }
+  100% {
+    transform: translateY(110vh);
+  }
+}
+
+/* feed row entry */
+@keyframes row-in {
+  0% {
+    background: #ffffff;
+    color: #000000;
+    transform: translateX(-6px);
+  }
+  12% {
+    background: var(--color-fb-flare);
+    color: #000000;
+    transform: translateX(0);
+  }
+  60% {
+    background: rgba(255, 90, 23, 0.14);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.row-in {
+  animation: row-in 1100ms steps(14) 1;
+}
+
+@keyframes digit-flash {
+  0% {
+    color: var(--color-fb-flare);
+    transform: translateY(-2px);
+  }
+  100% {
+    color: inherit;
+    transform: translateY(0);
+  }
+}
+
+.digit-flash {
+  animation: digit-flash 420ms steps(6) 1;
+}
+
+@keyframes led-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+.led {
+  animation: led-blink 1.1s steps(2) infinite;
+}
+
+@keyframes flame-idle {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.82);
+  }
+}
+
+.flame-col {
+  transform-origin: bottom;
+  animation: flame-idle 700ms steps(4) infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 38s linear infinite;
+}
+
+.panel {
+  border: 2px solid var(--color-fb-dim);
+  background: var(--color-fb-ink);
+  position: relative;
+}
+
+.panel::before,
+.panel::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: var(--color-fb-burn);
+}
+.panel::before {
+  top: -2px;
+  left: -2px;
+}
+.panel::after {
+  bottom: -2px;
+  right: -2px;
+}
+
+.glow-burn {
+  text-shadow:
+    0 0 6px rgba(255, 90, 23, 0.85),
+    0 0 18px rgba(255, 90, 23, 0.35);
+}
+
+.glow-white {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-lines,
+  .crt-sweep,
+  .row-in,
+  .flame-col,
+  .led,
+  .marquee-track,
+  .digit-flash {
+    animation: none;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "website",
+  "name": "Friendsburn",
+  "description": "Live-only burn and activity terminal for $RAREFRIENDS on Robinhood Chain.",
+  "url": "https://example.com",
+  "hostname": "localhost",
+  "port": 4200
+}
