@@ -6,18 +6,18 @@ import { promisify } from "node:util";
 import type { Logger, Plugin, ResolvedConfig } from "vite";
 
 // Optimizes the static assets Vite copied verbatim from public/ into the build
-// output. Runs only on the dist copies at closeBundle — files in public/ are
+// output. Runs only on the dist copies at closeBundle, files in public/ are
 // never mutated. Tuned for a resource-constrained sandbox: files are processed
 // strictly sequentially, sharp runs with concurrency 1, ffmpeg is capped at two
 // threads, and results are cached in node_modules/.cache keyed by content hash
 // so rebuilds skip work already done. A failure on one file never fails the
-// build — it logs a warning and moves on.
+// build, it logs a warning and moves on.
 
 const SETTINGS_VERSION = 1; // bump to invalidate cached results when tuning below
 
 const IMAGE_EXT = /\.(png|jpe?g|webp)$/i; // gif/avif/svg skipped: poor CPU/fidelity tradeoff
 const VIDEO_EXT = /\.(mp4|webm|mov)$/i;
-const VIDEO_TRANSCODE_EXT = /\.(mp4|mov)$/i; // webm re-encode (vp8/vp9) is too slow — warn only
+const VIDEO_TRANSCODE_EXT = /\.(mp4|mov)$/i; // webm re-encode (vp8/vp9) is too slow, warn only
 
 const IMAGE_MIN_BYTES = 10 * 1024; // savings below this are noise
 const IMAGE_MAX_DIMENSION = 2560; // downscale anything larger, preserving aspect ratio
@@ -149,7 +149,7 @@ async function optimizeVideo(
     `(target < ${mb(VIDEO_WARN_BYTES)}; e.g. 720p/1080p H.264, CRF 26–28).`;
   if (!VIDEO_TRANSCODE_EXT.test(file) || !hasFfmpeg()) {
     if (size > VIDEO_WARN_BYTES) {
-      logger.warn(`[asset-optimizer] ${rel} is ${mb(size)} — ${compressHint}`);
+      logger.warn(`[asset-optimizer] ${rel} is ${mb(size)}, ${compressHint}`);
     }
     return;
   }
@@ -161,7 +161,7 @@ async function optimizeVideo(
   const skipMarker = path.join(cacheDir, `${key}.skip`);
   if (await applyCached(file, cached, skipMarker)) return;
 
-  // Transcode to a temp file in the cache dir — never in place. Threads and
+  // Transcode to a temp file in the cache dir, never in place. Threads and
   // preset are capped to keep CPU usage modest in the sandbox.
   const tmp = path.join(cacheDir, `${key}.tmp${ext}`);
   try {
@@ -201,7 +201,7 @@ async function optimizeVideo(
   const finalSize = (await fs.stat(file)).size;
   if (finalSize > VIDEO_WARN_BYTES) {
     logger.warn(
-      `[asset-optimizer] ${rel} is still ${mb(finalSize)} after transcoding — ${compressHint}`,
+      `[asset-optimizer] ${rel} is still ${mb(finalSize)} after transcoding, ${compressHint}`,
     );
   }
 }
@@ -226,7 +226,7 @@ export default function assetOptimizerPlugin(): Plugin {
       const cacheDir = path.resolve(config.root, "node_modules/.cache/asset-optimizer");
       await fs.mkdir(cacheDir, { recursive: true });
 
-      // Strictly sequential — one file, one core at a time.
+      // Strictly sequential, one file, one core at a time.
       for (const file of images) {
         const rel = path.relative(outDir, file);
         await optimizeImage(file, rel, cacheDir, config.logger).catch((error) => {

@@ -1,19 +1,54 @@
-# App template
+# Friendsburn
 
-Runable copies this Bun and Turborepo project into each new sandbox.
+Live-only burn and activity terminal for `$RAREFRIENDS` on Robinhood Chain mainnet (chain 4663).
 
-The root package commands are the external contract:
+The terminal reads the chain head directly and keeps a rolling in-memory window. There is no
+database and no stored history: refresh the page and the window starts over.
 
-- `bun run dev` starts the web app.
-- `bun run dev:desktop` and `bun run dev:mobile` start platform clients.
-- `bun run build` builds every package.
-- `bun run start` starts or restarts the production server.
-- `bun run stop` stops the production server.
-- `bun run lint` and `bun run typecheck` validate the project.
-- The `db:generate`, `db:migrate`, and `db:push` commands manage the database.
+## Stack
 
-Deployment tools depend on these command names. Their implementations may change, but the names must remain stable.
+Bun workspaces + Turborepo. One package, `packages/web`:
 
-The web package owns the API, database, and shared web interface. The mobile package is an Expo client. The desktop package is an Electron shell around the web app. Services use the fixed ports defined in `__ports.cjs`, and the web health endpoint is `/api/health`.
+- React 19 + Wouter + Tailwind CSS 4, bundled by Vite 7 (`src/web/`)
+- Hono + oRPC API served from the same port in dev via `vite/__plugins/hono-dev-plugin.ts` (`src/api/`)
+- `viem` for chain reads, against `https://rpc.mainnet.chain.robinhood.com`
 
-Secrets belong in the root `.env` file. Browser values must use the `VITE_` prefix. Commands prefixed with `internal:` are for template maintenance.
+## Develop
+
+```bash
+bun install
+bun run dev          # http://localhost:4200
+```
+
+The dev port is fixed in `__ports.cjs`.
+
+## Build
+
+```bash
+bun run build:web    # writes packages/web/dist
+```
+
+## Deploy
+
+Static output. On Vercel, set the project root to the repo root with:
+
+- Build command: `bun install && bun run build:web`
+- Output directory: `packages/web/dist`
+
+## Layout
+
+```
+packages/web/src/web/lib/chain/    chain engine, log decoding, contract constants
+packages/web/src/web/components/   terminal panels, feeds, charts
+packages/web/src/web/pages/        index, leaderboard, recap, milestone
+packages/web/src/api/routes/       ping, chain (RPC passthrough fallback)
+```
+
+## Contracts
+
+| Name | Address |
+|---|---|
+| `$RAREFRIENDS` token | `0x0779369854d3EcdEA927206718FFD7730C67B71f` |
+| RareFriendDuel | `0x6CfEF40c0640a1c81A2d82e4832171eC5AE7E49A` |
+
+Community built. Not financial advice.

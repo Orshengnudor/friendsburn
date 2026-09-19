@@ -7,7 +7,7 @@ It should read like an arcade cabinet attract screen, not a corporate dashboard.
 ## Rules
 
 - No em dashes in any copy. Use commas, colons, or periods.
-- No Runable branding anywhere: no badge, no credit line, no mention.
+- No third party branding, badges, credit lines or telemetry anywhere in the shipped output.
 - Live only. Nothing is stored. Every number on screen comes from a rolling in-memory window fed by the chain head.
 - Numbers are the art. Big, monospaced, tabular, always moving.
 

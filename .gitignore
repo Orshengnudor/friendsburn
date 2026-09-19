@@ -70,9 +70,6 @@ android
 # scripts (local-only provisioning)
 scripts/
 !packages/mobile/scripts/
-packages/mobile/scripts/*
-!packages/mobile/scripts/generate-ios-certs.py
 
 # Vercel local link data
 .vercel/
-.runable/

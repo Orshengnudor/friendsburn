@@ -10,10 +10,14 @@ const root = path.resolve(__dirname, "../..");
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, root, "");
-  Object.assign(process.env, env);
+  // NODE_ENV is kept out of this merge on purpose. Vite reads it before the config is
+  // evaluated, so the build scripts pin NODE_ENV=production instead: a stray
+  // NODE_ENV=development in .env would otherwise ship the React development bundle.
+  const { NODE_ENV: _ignoredNodeEnv, ...safeEnv } = env;
+  Object.assign(process.env, safeEnv);
 
   return {
-    // All env files live at the repo root — keep Vite's own env loading there too,
+    // All env files live at the repo root, keep Vite's own env loading there too,
     // so packages/web/.env* files can never shadow the root .env.
     envDir: root,
     plugins: [

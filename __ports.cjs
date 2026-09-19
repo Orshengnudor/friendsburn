@@ -1,3 +1,4 @@
-// Runable assigns these ports when it creates the app and derives every preview URL from them, so
-// they are fixed for the app's lifetime — changing one orphans the URL the user already has.
-module.exports = require("./.runable/ports.json");
+// Fixed dev server ports. Production builds are static and do not read this.
+module.exports = {
+  website: 4200,
+};

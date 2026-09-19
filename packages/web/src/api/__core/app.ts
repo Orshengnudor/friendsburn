@@ -4,7 +4,7 @@ import { os, type Router } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 
 /**
- * TEMPLATE-MANAGED (__ prefix) — do not edit. Feature procedures belong in
+ * TEMPLATE-MANAGED (__ prefix), do not edit. Feature procedures belong in
  * src/api/routes/, composed in src/api/index.ts.
  *
  * oRPC is the API layer: define procedures on the `router` in src/api/index.ts;
@@ -18,11 +18,11 @@ import { RPCHandler } from "@orpc/server/fetch";
 
 /** Per-request context available in every procedure via `context`. */
 export interface RpcContext {
-  /** Raw request headers — read cookies/authorization for auth. */
+  /** Raw request headers, read cookies/authorization for auth. */
   headers: Headers;
 }
 
-/** Base procedure builder — chain .input()/.use()/.handler() off this. */
+/** Base procedure builder, chain .input()/.use()/.handler() off this. */
 export const base = os.$context<RpcContext>();
 
 /** Assembles the HTTP mount: CORS → /api/health → oRPC procedures at /api/rpc/*. */
