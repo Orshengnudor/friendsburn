@@ -1,4 +1,7 @@
+import { Link } from "wouter";
 import type { ChainState } from "../lib/chain/types";
+import { NavMenu } from "./nav-menu";
+import { SoundToggle } from "./sound-toggle";
 
 type Props = { state: ChainState; now: number };
 
@@ -29,7 +32,7 @@ export function StatusRail({ state, now }: Props) {
 
   return (
     <div className="panel flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2">
-      <div className="flex items-center gap-2.5">
+      <Link href="/" className="flex items-center gap-2.5">
         <img
           src="/images/friend-mark.png"
           alt="Friendsburn"
@@ -43,10 +46,10 @@ export function StatusRail({ state, now }: Props) {
             FRIENDS<span className="text-fb-burn glow-burn">BURN</span>
           </div>
           <div className="pixel mt-1 text-[6px] text-fb-ash sm:text-[7px]">
-            {state.symbol ? `$${state.symbol}` : "$RAREFRIENDS"} LIVE BURN TERMINAL
+            {state.symbol ? `${state.symbol}` : "$RAREFRIENDS"} LIVE BURN TERMINAL
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1.5">
         <div className="flex items-center gap-2">
@@ -66,6 +69,10 @@ export function StatusRail({ state, now }: Props) {
         <Cell label="PING" value={state.latencyMs ? `${state.latencyMs}MS` : "..."} />
         <Cell label="WINDOW" value={`${Math.round(state.windowMs / 60000)}MIN`} />
         <Cell label="WATCHING" value={uptimeLabel} tone="text-fb-ember" />
+        <div className="flex items-center gap-1.5">
+          <SoundToggle />
+          <NavMenu />
+        </div>
       </div>
     </div>
   );

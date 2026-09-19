@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import type { ChainState } from "../lib/chain/types";
 import { formatAmount } from "../lib/chain/decode";
 import { Panel } from "./panel";
@@ -9,20 +10,16 @@ function Stat({
   value,
   sub,
   tone = "text-fb-white",
-  wide = false,
+  className = "",
 }: {
   label: string;
   value: string;
   sub: string;
   tone?: string;
-  wide?: boolean;
+  className?: string;
 }) {
   return (
-    <div
-      className={`border-b-2 border-fb-dim px-3 py-2 last:border-b-0 ${
-        wide ? "col-span-2 lg:col-span-1" : ""
-      }`}
-    >
+    <div className={`border-b-2 border-fb-dim px-3 py-2 last:border-b-0 ${className}`}>
       <div className="pixel text-[7px] text-fb-ash">{label}</div>
       <div className={`font-mono text-[17px] leading-tight font-bold sm:text-[20px] ${tone}`}>
         {value}
@@ -66,13 +63,15 @@ export function BurnStats({ state }: Props) {
           value={`${(state.transfersInWindow / minutes).toFixed(1)}/M`}
           sub={`${state.transfersInWindow.toLocaleString("en-US")} IN WINDOW`}
         />
-        <Stat
-          label="SINCE YOU ARRIVED"
-          value={formatAmount(state.sessionBurned)}
-          sub={`${state.sessionBurns.toLocaleString("en-US")} BURNS WHILE WATCHING`}
-          tone="text-fb-live"
-          wide
-        />
+        <Link href="/recap" className="col-span-2 hover:bg-fb-live/10 lg:col-span-1">
+          <Stat
+            label="SINCE YOU ARRIVED"
+            value={formatAmount(state.session.burned)}
+            sub={`${state.session.burns.toLocaleString("en-US")} BURNS, TAP FOR RECAP CARD`}
+            tone="text-fb-live"
+            className="border-b-0"
+          />
+        </Link>
       </div>
     </Panel>
   );

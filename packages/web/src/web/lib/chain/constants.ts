@@ -44,8 +44,33 @@ export const DEAD_ADDRESS = "0x000000000000000000000000000000000000dead";
 /** Addresses that count as a burn sink for RF transfers. */
 export const BURN_SINKS = new Set([ZERO_ADDRESS, DEAD_ADDRESS]);
 
-/** Rolling window kept in memory. Nothing is stored beyond this. */
-export const WINDOW_MS = 45 * 60 * 1000;
+/** Default rolling window kept in memory. Nothing is stored beyond this. */
+export const DEFAULT_WINDOW_MIN = 45;
+export const MIN_WINDOW_MIN = 5;
+export const MAX_WINDOW_MIN = 120;
+
+/**
+ * Window length, overridable with ?window=15 so a shared link opens already
+ * framed. Clamped, because the window also decides how many blocks the initial
+ * fill reads.
+ */
+function readWindowMin() {
+  if (typeof window === "undefined") return DEFAULT_WINDOW_MIN;
+  const raw = new URLSearchParams(window.location.search).get("window");
+  const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
+  if (!Number.isFinite(parsed)) return DEFAULT_WINDOW_MIN;
+  return Math.min(MAX_WINDOW_MIN, Math.max(MIN_WINDOW_MIN, parsed));
+}
+
+export const WINDOW_MIN = readWindowMin();
+export const WINDOW_MS = WINDOW_MIN * 60 * 1000;
+
+/** A burn at or above this many RF takes over the screen. */
+export const WHALE_THRESHOLD = 25_000;
+/** Quiet time after a takeover, so a burst of big burns cannot strobe the page. */
+export const WHALE_COOLDOWN_MS = 20_000;
+/** Rows shown on the leaderboard page. */
+export const LEADERBOARD_LIMIT = 25;
 /** Assumed blocks per second, refined at runtime from real block timestamps. */
 export const FALLBACK_BLOCKS_PER_SEC = 9;
 /** Head poll interval. */

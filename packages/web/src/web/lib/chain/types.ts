@@ -36,6 +36,34 @@ export type PlayRow = {
 
 export type Bucket = { minute: number; burned: number; count: number };
 
+export type BurnerRow = {
+  address: string;
+  burned: number;
+  count: number;
+  largest: number;
+  lastTs: number;
+};
+
+/**
+ * The latest ingest batch, bumped once per poll that contained burns. Sound and
+ * the whale alert read this instead of diffing the feed themselves.
+ */
+export type Pulse = {
+  id: number;
+  rows: BurnRow[];
+  at: number;
+};
+
+export type SessionStats = {
+  burned: number;
+  burns: number;
+  largest: number;
+  nfts: number;
+  plays: number;
+  startedAt: number;
+  startSupply: number;
+};
+
 export type ChainState = {
   status: EngineStatus;
   error: string | null;
@@ -58,6 +86,9 @@ export type ChainState = {
   nfts: NftRow[];
   plays: PlayRow[];
   buckets: Bucket[];
+  burners: BurnerRow[];
+  pulse: Pulse;
+  session: SessionStats;
   burnedInWindow: number;
   burnCountInWindow: number;
   largestBurn: number;

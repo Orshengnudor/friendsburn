@@ -250,6 +250,67 @@ body {
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
 }
 
+/* whale takeover */
+@keyframes whale-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes whale-bg {
+  0%,
+  100% {
+    background: rgba(0, 0, 0, 0.9);
+  }
+  8% {
+    background: rgba(255, 224, 138, 0.88);
+  }
+  16% {
+    background: rgba(255, 90, 23, 0.5);
+  }
+  24% {
+    background: rgba(0, 0, 0, 0.82);
+  }
+  32% {
+    background: rgba(255, 90, 23, 0.32);
+  }
+}
+
+@keyframes whale-pop {
+  0% {
+    transform: translateY(6px) scale(0.92);
+  }
+  40% {
+    transform: translateY(0) scale(1.04);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.whale-wrap {
+  animation: whale-in 160ms steps(4) 1;
+}
+
+.whale-bg {
+  animation: whale-bg 900ms steps(9) 1 forwards;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.whale-amount {
+  animation: whale-pop 320ms steps(6) 1;
+}
+
+/* leaderboard bar */
+.rank-bar {
+  background: linear-gradient(to right, rgba(255, 90, 23, 0.55), rgba(255, 160, 43, 0.12));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .crt-lines,
   .crt-sweep,
@@ -257,7 +318,13 @@ body {
   .flame-col,
   .led,
   .marquee-track,
-  .digit-flash {
+  .digit-flash,
+  .whale-wrap,
+  .whale-bg,
+  .whale-amount {
     animation: none;
+  }
+  .whale-bg {
+    background: rgba(0, 0, 0, 0.92);
   }
 }

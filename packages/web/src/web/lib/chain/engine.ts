@@ -18,7 +18,7 @@ import {
   WINDOW_MS,
   robinhoodChain,
 } from "./constants";
-import type { BurnRow, ChainState, NftRow, PlayRow } from "./types";
+import type { BurnRow, BurnerRow, ChainState, NftRow, PlayRow } from "./types";
 import { decodeDetail, topicToAddress, topicToUint } from "./decode";
 
 const TOKEN = ADDRESSES.token.toLowerCase();
@@ -56,6 +56,17 @@ const initialState: ChainState = {
   logsSeen: 0,
   sessionBurned: 0,
   sessionBurns: 0,
+  burners: [],
+  pulse: { id: 0, rows: [], at: 0 },
+  session: {
+    burned: 0,
+    burns: 0,
+    largest: 0,
+    nfts: 0,
+    plays: 0,
+    startedAt: 0,
+    startSupply: 0,
+  },
 };
 
 type RawLog = Log<bigint, number, false>;
@@ -72,7 +83,8 @@ class BurnEngine {
   private cursor = 0;
   private headTs = 0;
   private headTsBlock = 0;
-  private burnLog: { t: number; amt: number }[] = [];
+  private burnLog: { t: number; amt: number; from: string }[] = [];
+  private pulseId = 0;
   private transferLog: number[] = [];
   private nftLog: number[] = [];
   private playLog: number[] = [];
@@ -215,7 +227,16 @@ class BurnEngine {
     }
     this.cursor = to;
     this.filled = true;
-    this.emit({ head: to, lastPollAt: Date.now() });
+    // the session clock starts once the backlog is in, so a recap counts only live arrivals
+    this.emit({
+      head: to,
+      lastPollAt: Date.now(),
+      session: {
+        ...this.state.session,
+        startSupply: this.state.supplyFloat,
+        startedAt: Date.now(),
+      },
+    });
   }
 
   private async tick() {
@@ -265,11 +286,16 @@ class BurnEngine {
         functionName: "totalSupply",
       });
       const float = Number(formatUnits(supply, this.state.decimals));
+      const session =
+        this.filled && this.state.session.startSupply <= 0
+          ? { ...this.state.session, startSupply: float, startedAt: Date.now() }
+          : this.state.session;
       this.emit({
         supply,
         supplyPrev: this.state.supplyFloat || float,
         supplyFloat: float,
         supplyAt: Date.now(),
+        session,
       });
     } catch {
       /* keep the last known supply, the counter keeps interpolating */
@@ -351,7 +377,9 @@ class BurnEngine {
     }
 
     const now = Date.now();
-    for (const burn of burns) this.burnLog.push({ t: burn.ts, amt: burn.amountFloat });
+    for (const burn of burns) {
+      this.burnLog.push({ t: burn.ts, amt: burn.amountFloat, from: burn.from });
+    }
     for (const ts of transferTs) this.transferLog.push(ts);
     for (const row of nfts) this.nftLog.push(row.ts);
     for (const row of plays) this.playLog.push(row.ts);
@@ -359,15 +387,35 @@ class BurnEngine {
     const byTime = <T extends { ts: number; block: number }>(a: T, b: T) =>
       b.block - a.block || b.ts - a.ts;
 
+    const freshBurned = burns.reduce((sum, b) => sum + b.amountFloat, 0);
     const patch: Partial<ChainState> = {
       logsSeen: this.state.logsSeen + logs.length,
       sessionBurned:
         this.filled && burns.length > 0
-          ? this.state.sessionBurned + burns.reduce((sum, b) => sum + b.amountFloat, 0)
+          ? this.state.sessionBurned + freshBurned
           : this.state.sessionBurned,
       sessionBurns: this.filled ? this.state.sessionBurns + burns.length : this.state.sessionBurns,
       lastEventAt: burns.length + nfts.length + plays.length > 0 ? now : this.state.lastEventAt,
     };
+
+    // Only events that landed after the window fill count as "while watching",
+    // otherwise the recap would credit the visitor with 45 minutes of backlog.
+    if (this.filled) {
+      const previous = this.state.session;
+      patch.session = {
+        ...previous,
+        burned: previous.burned + freshBurned,
+        burns: previous.burns + burns.length,
+        largest: Math.max(previous.largest, ...burns.map((b) => b.amountFloat), 0),
+        nfts: previous.nfts + nfts.length,
+        plays: previous.plays + plays.length,
+        startedAt: previous.startedAt || now,
+      };
+      if (burns.length > 0) {
+        this.pulseId += 1;
+        patch.pulse = { id: this.pulseId, rows: burns, at: now };
+      }
+    }
 
     if (burns.length > 0) {
       patch.burns = [...burns.sort(byTime), ...this.state.burns].slice(0, FEED_LIMIT);
@@ -404,11 +452,28 @@ class BurnEngine {
     let burned = 0;
     let largest = 0;
     let burnCount = 0;
+    const tally = new Map<string, BurnerRow>();
     for (const entry of this.burnLog) {
       if (entry.t < cutoff) continue;
       burned += entry.amt;
       burnCount += 1;
       if (entry.amt > largest) largest = entry.amt;
+
+      const row = tally.get(entry.from);
+      if (row) {
+        row.burned += entry.amt;
+        row.count += 1;
+        row.largest = Math.max(row.largest, entry.amt);
+        row.lastTs = Math.max(row.lastTs, entry.t);
+      } else {
+        tally.set(entry.from, {
+          address: entry.from,
+          burned: entry.amt,
+          count: 1,
+          largest: entry.amt,
+          lastTs: entry.t,
+        });
+      }
       const index = Math.floor(entry.t / minute) - base;
       if (index >= 0 && index < bucketCount) {
         buckets[index].burned += entry.amt;
@@ -416,8 +481,11 @@ class BurnEngine {
       }
     }
 
+    const burners = [...tally.values()].sort((a, b) => b.burned - a.burned);
+
     return {
       buckets,
+      burners,
       burnedInWindow: burned,
       burnCountInWindow: burnCount,
       largestBurn: largest,

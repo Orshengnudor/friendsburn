@@ -29,6 +29,7 @@ export function TxLink({ hash, label }: { hash: string; label: string }) {
       href={`${EXPLORER}/tx/${hash}`}
       target="_blank"
       rel="noreferrer"
+      onClick={(event) => event.stopPropagation()}
       className="text-fb-ash underline decoration-fb-dim underline-offset-2 hover:text-fb-white"
     >
       {label}
